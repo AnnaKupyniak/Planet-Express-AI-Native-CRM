@@ -1,0 +1,6 @@
+openai
+openai-agents
+httpx
+requests
+python-dotenv
+pydantic
