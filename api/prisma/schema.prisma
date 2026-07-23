@@ -1,0 +1,73 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// 1. Користувачі для входу в CRM (JWT Auth)[cite: 1, 2]
+model User {
+  id       Int    @id @default(autoincrement())
+  email    String @unique
+  password String
+  role     String @default("crew")
+}
+
+// 2. Клієнти (MomCorp, Robot Devil...)[cite: 2]
+model Client {
+  id         Int        @id @default(autoincrement())
+  name       String
+  is_evil     Boolean    @default(false)
+  description String?
+  is_deleted  Boolean    @default(false)
+  deliveries  Delivery[]
+}
+
+// 3. Планети (Omicron Persei 8, Earth...)[cite: 2]
+model Planet {
+  id           Int        @id @default(autoincrement())
+  name         String
+  danger_level String     @default("low")
+  description  String?
+  is_deleted   Boolean    @default(false)
+  deliveries   Delivery[]
+}
+
+// 4. Члени екіпажу (Fry, Leela, Bender...)[cite: 2]
+model CrewMember {
+  id          Int          @id @default(autoincrement())
+  name        String
+  role        String
+  is_fired    Boolean      @default(false)
+  fire_reason String?
+  assignments Assignment[]
+}
+
+// 5. Замовлення на доставку[cite: 2]
+model Delivery {
+  id          Int          @id @default(autoincrement())
+  cargo_name  String
+  reward_cash Int          @default(100)
+  status      String       @default("pending")
+  
+  planet_id   Int
+  planet      Planet       @relation(fields: [planet_id], references: [id])
+
+  client_id   Int
+  client      Client       @relation(fields: [client_id], references: [id])
+
+  assignments Assignment[]
+}
+
+// 6. Зв'язок Багато-до-Багатьох (M:N) між Доставкою та Екіпажем[cite: 2]
+model Assignment {
+  id             Int        @id @default(autoincrement())
+  role_on_ship   String
+  delivery_id    Int
+  delivery       Delivery   @relation(fields: [delivery_id], references: [id])
+  crew_member_id Int
+  crew_member    CrewMember @relation(fields: [crew_member_id], references: [id])
+
+  @@unique([delivery_id, crew_member_id])
+}
