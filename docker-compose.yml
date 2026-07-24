@@ -1,0 +1,71 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: planet_express_db
+    environment:
+      POSTGRES_USER: express_user
+      POSTGRES_PASSWORD: express_password
+      POSTGRES_DB: planet_express_crm
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - planet_express_net
+
+  api:
+    build:
+      context: ./api
+    container_name: planet_express_api
+    environment:
+      - DATABASE_URL=postgresql://express_user:express_password@postgres:5432/planet_express_crm?schema=public
+      - JWT_SECRET=supersecret123
+    ports:
+      - "4000:4000"
+    depends_on:
+      - postgres
+    volumes:
+      - ./api:/app
+      - /app/node_modules
+      - ./agent:/agent
+      - ./logs:/logs
+    networks:
+      - planet_express_net
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: planet_express_frontend
+    environment:
+      - API_URL=http://planet_express_api:4000
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - planet_express_net
+
+  agent:
+    build:
+      context: ./agent
+    container_name: planet_express_agent
+    env_file:
+      - ./agent/.env
+    environment:
+      - EXPRESS_API_URL=http://planet_express_api:4000/api
+    depends_on:
+      - api
+    volumes:
+      - ./agent:/app
+    networks:
+      - planet_express_net
+
+networks:
+  planet_express_net:
+    driver: bridge
+
+volumes:
+  postgres_data:
