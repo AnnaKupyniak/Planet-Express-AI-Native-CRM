@@ -11,7 +11,6 @@ router.get('/', async (_req: AuthenticatedRequest, res: Response): Promise<void>
       planet: true,
       client: true,
       assignments: { include: { crew_member: true } },
-      logs: true,
     },
   });
   res.json(deliveries);
@@ -29,7 +28,6 @@ router.get('/:id', async (req: AuthenticatedRequest, res: Response): Promise<voi
       planet: true,
       client: true,
       assignments: { include: { crew_member: true } },
-      logs: { orderBy: { timestamp: 'asc' } },
     },
   });
   if (!delivery) {

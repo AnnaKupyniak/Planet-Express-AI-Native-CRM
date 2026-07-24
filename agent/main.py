@@ -114,7 +114,7 @@ def get_auth_headers() -> dict:
 
 # === 1. Визначення інструментів (Tools) ===
 
-def get_planets() -> str:
+def get_planets(**kwargs) -> str:
     try:
         res = requests.get(f"{EXPRESS_API_URL}/planets", headers=get_auth_headers(), timeout=5)
         res.encoding = 'utf-8'
@@ -149,7 +149,7 @@ def restore_planet(planet_id: int) -> str:
     except Exception as e:
         return json.dumps({"error": "network_error", "message": str(e)})
 
-def get_crew() -> str:
+def get_crew(**kwargs) -> str:
     try:
         res1 = requests.get(f"{EXPRESS_API_URL}/crew", headers=get_auth_headers(), timeout=5)
         res2 = requests.get(f"{EXPRESS_API_URL}/crew?fired=true", headers=get_auth_headers(), timeout=5)
@@ -171,8 +171,12 @@ def create_crew_member(name: str, role: str) -> str:
     except Exception as e:
         return json.dumps({"error": "network_error", "message": str(e)})
 
-def get_clients(search: str = None) -> str:
+def get_clients(search: str = None, **kwargs) -> str:
     try:
+        # If the LLM mistakenly passes 'name' instead of 'search'
+        if 'name' in kwargs and not search:
+            search = kwargs['name']
+            
         params = {}
         if search:
             params["search"] = search
