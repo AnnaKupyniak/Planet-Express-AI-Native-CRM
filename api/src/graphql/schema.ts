@@ -95,14 +95,6 @@ const DeliveryType: GraphQLObjectType = new GraphQLObjectType({
           where: { delivery_id: parent.id }
         });
       }
-    },
-    logs: {
-      type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(FlightLogType))),
-      resolve: (parent) => {
-        return prisma.flightLog.findMany({
-          where: { delivery_id: parent.id }
-        });
-      }
     }
   })
 });
@@ -125,26 +117,6 @@ const AssignmentType: GraphQLObjectType = new GraphQLObjectType({
       type: new GraphQLNonNull(CrewMemberType),
       resolve: (parent, _args, context) => {
         return context.loaders.crewLoader.load(parent.crew_member_id);
-      }
-    }
-  })
-});
-
-// 6. FlightLog Type
-const FlightLogType: GraphQLObjectType = new GraphQLObjectType({
-  name: 'FlightLog',
-  fields: () => ({
-    id: { type: new GraphQLNonNull(GraphQLInt) },
-    note: { type: new GraphQLNonNull(GraphQLString) },
-    timestamp: {
-      type: new GraphQLNonNull(GraphQLString),
-      resolve: (parent) => parent.timestamp.toISOString()
-    },
-    delivery_id: { type: new GraphQLNonNull(GraphQLInt) },
-    delivery: {
-      type: new GraphQLNonNull(DeliveryType),
-      resolve: (parent, _args, context) => {
-        return context.loaders.deliveryLoader.load(parent.delivery_id);
       }
     }
   })
@@ -266,21 +238,6 @@ const MutationType = new GraphQLObjectType({
           create: {
             role_on_ship: args.role_on_ship,
             crew_member_id: args.crew_member_id,
-            delivery_id: args.delivery_id
-          }
-        });
-      }
-    },
-    addFlightLog: {
-      type: new GraphQLNonNull(FlightLogType),
-      args: {
-        note: { type: new GraphQLNonNull(GraphQLString) },
-        delivery_id: { type: new GraphQLNonNull(GraphQLInt) }
-      },
-      resolve: (_source, args) => {
-        return prisma.flightLog.create({
-          data: {
-            note: args.note,
             delivery_id: args.delivery_id
           }
         });

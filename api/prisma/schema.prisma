@@ -17,7 +17,7 @@ model User {
 // 2. Клієнти (MomCorp, Robot Devil...)[cite: 2]
 model Client {
   id         Int        @id @default(autoincrement())
-  name       String
+  name       String     @unique
   is_evil     Boolean    @default(false)
   description String?
   is_deleted  Boolean    @default(false)
@@ -27,7 +27,7 @@ model Client {
 // 3. Планети (Omicron Persei 8, Earth...)[cite: 2]
 model Planet {
   id           Int        @id @default(autoincrement())
-  name         String
+  name         String     @unique
   danger_level String     @default("low")
   description  String?
   is_deleted   Boolean    @default(false)
@@ -37,7 +37,7 @@ model Planet {
 // 4. Члени екіпажу (Fry, Leela, Bender...)[cite: 2]
 model CrewMember {
   id          Int          @id @default(autoincrement())
-  name        String
+  name        String       @unique
   role        String
   is_fired    Boolean      @default(false)
   fire_reason String?

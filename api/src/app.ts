@@ -7,6 +7,7 @@ import { PrismaClient } from '@prisma/client';
 
 import authRouter from './routes/auth';
 import { authenticateToken } from './middleware/auth';
+import { errorHandler } from './middleware/errorHandler';
 
 import planetsRouter from './routes/planets';
 import crewRouter from './routes/crew';
@@ -53,14 +54,14 @@ app.use('/api/chat', authMiddleware, chatRouter);
 
 // Щодо GraphQL: він також захищений JWT, як і REST. Якщо запит не авторизований,
 // authMiddleware поверне 401 помилку ще до виклику createHandler.
-app.use('/api/graphql', authMiddleware, createHandler({ 
+app.use('/api/graphql', authMiddleware, createHandler({
   schema,
   context: (req: any) => ({
     loaders: createDataLoaders(),
     user: req.raw.user
   })
 }));
-app.use('/graphql', authMiddleware, createHandler({ 
+app.use('/graphql', authMiddleware, createHandler({
   schema,
   context: (req: any) => ({
     loaders: createDataLoaders(),
@@ -68,8 +69,10 @@ app.use('/graphql', authMiddleware, createHandler({
   })
 }));
 
+app.use(errorHandler);
+
 app.listen(PORT, () => {
-  console.log(`🚀 Planet Express API running on http://localhost:${PORT}`);
+  console.log(`Planet Express API running on http://localhost:${PORT}`);
 });
 
 export default app;

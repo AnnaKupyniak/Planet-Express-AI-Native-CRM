@@ -10,8 +10,8 @@ ALLOWED_TOOLS = {
   "get_clients",
   "create_client",
   "create_delivery",
+  "create_planet",
   "assign_crew_member",
-  "add_flight_log",
   "get_delivery_details",
   "fire_crew_member",
   "update_delivery_status",
@@ -54,11 +54,6 @@ def validate_input_params(tool_name: str, args: dict):
       raise GuardrailError("assign_crew_member: 'crew_member_id' must be an integer.")
     if not args.get("role_on_ship") or not isinstance(args.get("role_on_ship"), str):
       raise GuardrailError("assign_crew_member: 'role_on_ship' must be a non-empty string.")
-  elif tool_name == "add_flight_log":
-    if "delivery_id" in args and not isinstance(args.get("delivery_id"), int):
-      raise GuardrailError("add_flight_log: 'delivery_id' must be an integer.")
-    if not args.get("note") or not isinstance(args.get("note"), str):
-      raise GuardrailError("add_flight_log: 'note' must be a non-empty string.")
   elif tool_name == "get_delivery_details":
     if "delivery_id" in args and not isinstance(args.get("delivery_id"), int):
       raise GuardrailError("get_delivery_details: 'delivery_id' must be an integer.")
