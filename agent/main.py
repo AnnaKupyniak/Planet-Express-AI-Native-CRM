@@ -85,7 +85,7 @@ JWT_TOKEN = None
 def login_agent():
     """Авторизація агента в Express API за допомогою JWT."""
     global JWT_TOKEN
-    print("🔐 Авторизація агента в Express API...")
+    print("Авторизація агента в Express API...")
     try:
         res = requests.post(
             f"{EXPRESS_API_URL}/auth/login",
@@ -97,12 +97,12 @@ def login_agent():
         )
         if res.status_code == 200:
             JWT_TOKEN = res.json().get("access_token")
-            print("✅ JWT Токен успішно отримано!\n")
+            print("JWT Токен успішно отримано!\n")
         else:
-            print(f"❌ Помилка авторизації [{res.status_code}]: {res.text}")
+            print(f"Помилка авторизації [{res.status_code}]: {res.text}")
             sys.exit(1)
     except Exception as e:
-        print(f"❌ Не вдалося підключитися до API: {e}")
+        print(f"Не вдалося підключитися до API: {e}")
         sys.exit(1)
 
 def get_auth_headers() -> dict:
@@ -562,14 +562,15 @@ def run_agent(prompt: str, log_file: str = None):
                 messages=messages,
                 tools=TOOLS_SCHEMA,
                 tool_choice="auto",
-                temperature=0.1
+                temperature=0.1,
+                parallel_tool_calls=False
             )
         except Exception as e:
             error_str = str(e)
             
             # Check for Rate limit or 429
             if "Rate limit reached" in error_str or "429" in error_str:
-                print("⚠️ Ліміт токенів API вичерпано. Спробуй пізніше.")
+                print("Ліміт токенів API вичерпано. Спробуй пізніше.")
                 break
             else:
                 if "expected integer, but got string" in error_str:
@@ -579,12 +580,12 @@ def run_agent(prompt: str, log_file: str = None):
                 elif "did not match schema" in error_str:
                     error_msg = f"Помилка LLM: Твої параметри не відповідають схемі: {error_str}. Ніколи не передавай null чи рядки замість чисел. Якщо не знаєш ID, спершу використай інструменти пошуку!"
                 elif "model_decommissioned" in error_str:
-                    print(f"⚠️ Обрана модель більше не підтримується API: {error_str}")
+                    print(f"Обрана модель більше не підтримується API: {error_str}")
                     break
                 else:
                     error_msg = f"Помилка LLM: {error_str}. Спробуй ще раз з правильними параметрами."
                 
-                print(f"⚠️ {error_msg}")
+                print(f"{error_msg}")
                 log_step(step, "agent_error", {}, error_str)
                 messages.append({"role": "system", "content": error_msg})
                 continue
@@ -605,7 +606,10 @@ def run_agent(prompt: str, log_file: str = None):
                     unique_tool_calls.append(tc)
                 else:
                     print(f"⚠️ Виявлено дубль виклику інструмента '{tc.function.name}'. Видаляємо дубль.")
-            
+            if len(unique_tool_calls) > 1:
+                print(f"⚠️ Виявлено паралельні виклики інструментів. Примусово виконуємо лише перший інструмент для збереження послідовності (Chain of Thought).")
+                unique_tool_calls = [unique_tool_calls[0]]
+                
             response_message.tool_calls = unique_tool_calls
 
             message_dict["tool_calls"] = [
@@ -629,7 +633,7 @@ def run_agent(prompt: str, log_file: str = None):
         if not response_message.tool_calls:
             print("--- Final response ---")
             print(response_message.content)
-            print(f"\nTrace saved to logs/trace.jsonl")
+            print(f"\nTrace saved successfully.")
             return response_message.content
 
         # Обробка виклику інструментів
@@ -713,7 +717,7 @@ def run_agent(prompt: str, log_file: str = None):
                     "content": function_response
                 })
             else:
-                print(f"❌ Помилка: Невідомий інструмент {function_name}")
+                print(f"Помилка: Невідомий інструмент {function_name}")
 
     print("⚠️ Перевищено максимальну кількість кроків агента!")
     return "Помилка: Перевищено максимальну кількість кроків."

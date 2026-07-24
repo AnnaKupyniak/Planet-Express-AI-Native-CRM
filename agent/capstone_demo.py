@@ -1,11 +1,7 @@
 import os
 import sys
 
-# Налаштовуємо UTF-8 кодування для виведення на консоль у Windows
-if sys.platform.startswith('win'):
-    import io
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
-    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
+# UTF-8 override removed to prevent 'I/O operation on closed file' error
 
 import json
 import requests
@@ -89,10 +85,10 @@ def main():
     set_log_file(log_path)
     
     brief = (
-        "Онбордь нового клієнта: 'MomCorp' (вона є злою: is_evil = True). "
-        "Знайди в системі планету 'Earth' та екіпаж. "
-        "Створи для MomCorp доставку вантажу 'Slurm Dispenser' на планету Earth з винагородою 5000 кредитів. "
-        "Признач Turanga Leela на цю доставку у якості Captain. "
+        "КРОК 1: Створи нового клієнта 'Lurr' (is_evil = True).\n"
+        "КРОК 2: Використай get_clients, get_planets та get_crew, щоб знайти ID клієнта Lurr, планети 'Omicron Persei 8' та працівника 'Turanga Leela'.\n"
+        "КРОК 3: Використовуючи ТІЛЬКИ числові ID, створи доставку 'Slurm Dispenser' (винагорода 5000).\n"
+        "КРОК 4: Використовуючи числові ID, признач Turanga Leela на цю доставку як 'Captain'.\n"
         "У кінці виведи підсумок."
     )
     
@@ -105,7 +101,7 @@ def main():
     print("================================================================================")
     
     # Перевіряємо стан БД
-    verify_db_state("MomCorp", "Slurm Dispenser")
+    verify_db_state("Lurr", "Slurm Dispenser")
 
 if __name__ == "__main__":
     main()
