@@ -1,6 +1,7 @@
 import { Router, Response } from 'express';
 import { AuthenticatedRequest } from '../middleware/auth';
 import { prisma } from '../app';
+import { PlanetSchema } from '../validation';
 
 const router = Router();
 
@@ -23,11 +24,12 @@ router.get('/:id', async (req: AuthenticatedRequest, res: Response): Promise<voi
 });
 
 router.post('/', async (req: AuthenticatedRequest, res: Response): Promise<void> => {
-  const { name, danger_level, description } = req.body;
-  if (!name) {
-    res.status(400).json({ error: 'validation_error', message: 'Name is required' });
+  const validation = PlanetSchema.safeParse(req.body);
+  if (!validation.success) {
+    res.status(400).json({ error: 'validation_error', message: 'Invalid request data', detail: validation.error.issues });
     return;
   }
+  const { name, danger_level, description } = validation.data;
   const existingPlanet = await prisma.planet.findFirst({ where: { name } });
   if (existingPlanet) {
     res.status(200).json(existingPlanet);
@@ -36,7 +38,7 @@ router.post('/', async (req: AuthenticatedRequest, res: Response): Promise<void>
   const newPlanet = await prisma.planet.create({
     data: { 
       name, 
-      danger_level: danger_level || 'low',
+      danger_level,
       description
     }
   });

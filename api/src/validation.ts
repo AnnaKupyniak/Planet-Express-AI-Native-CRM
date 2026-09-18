@@ -29,6 +29,12 @@ export const CrewMemberSchema = z.object({
   role: z.string().min(1, 'Role is required'),
 });
 
+export const PlanetSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  danger_level: z.string().optional().default('low'),
+  description: z.string().optional()
+});
+
 export const UpdateDeliverySchema = z.object({
   status: z.enum(['pending', 'in_progress', 'completed', 'cancelled']),
 });
