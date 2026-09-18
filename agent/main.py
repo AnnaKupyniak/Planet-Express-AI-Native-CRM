@@ -112,13 +112,32 @@ def get_auth_headers() -> dict:
         login_agent()
     return {"Authorization": f"Bearer {JWT_TOKEN}"}
 
+
+def handle_api_response(res, success_msg='Action completed successfully.'):
+    res.encoding = 'utf-8'
+    if res.status_code == 204:
+        import json
+        return json.dumps({'status': 'success', 'message': success_msg})
+    if res.status_code >= 400:
+        import json
+        try:
+            data = res.json()
+            return json.dumps({
+                'error': data.get('error', 'API error'),
+                'message': data.get('message', res.text),
+                'status': res.status_code
+            }, ensure_ascii=False)
+        except Exception:
+            return json.dumps({'error': 'API error', 'message': res.text, 'status': res.status_code}, ensure_ascii=False)
+    return res.text
+
 # === 1. Визначення інструментів (Tools) ===
+
 
 def get_planets(**kwargs) -> str:
     try:
         res = requests.get(f"{EXPRESS_API_URL}/planets", headers=get_auth_headers(), timeout=5)
-        res.encoding = 'utf-8'
-        return res.text
+        return handle_api_response(res)
     except Exception as e:
         return json.dumps({"error": "network_error", "message": str(e)})
 
@@ -126,26 +145,21 @@ def create_planet(name: str, danger_level: str = "low", description: str = "") -
     try:
         payload = {"name": name, "danger_level": danger_level, "description": description}
         res = requests.post(f"{EXPRESS_API_URL}/planets", json=payload, headers=get_auth_headers(), timeout=5)
-        res.encoding = 'utf-8'
-        return res.text
+        return handle_api_response(res)
     except Exception as e:
         return json.dumps({"error": "network_error", "message": str(e)})
 
 def delete_planet(planet_id: int) -> str:
     try:
         res = requests.delete(f"{EXPRESS_API_URL}/planets/{int(planet_id)}", headers=get_auth_headers(), timeout=5)
-        res.encoding = 'utf-8'
-        if res.status_code == 204:
-            return json.dumps({"status": "success", "message": "Planet moved to trash."})
-        return res.text or json.dumps({"error": f"API error {res.status_code}"})
+        return handle_api_response(res, "Planet moved to trash.")
     except Exception as e:
         return json.dumps({"error": "network_error", "message": str(e)})
 
 def restore_planet(planet_id: int) -> str:
     try:
         res = requests.patch(f"{EXPRESS_API_URL}/planets/{int(planet_id)}/restore", headers=get_auth_headers(), timeout=5)
-        res.encoding = 'utf-8'
-        return res.text
+        return handle_api_response(res)
     except Exception as e:
         return json.dumps({"error": "network_error", "message": str(e)})
 
@@ -166,8 +180,7 @@ def create_crew_member(name: str, role: str) -> str:
     try:
         payload = {"name": name, "role": role}
         res = requests.post(f"{EXPRESS_API_URL}/crew", json=payload, headers=get_auth_headers(), timeout=5)
-        res.encoding = 'utf-8'
-        return res.text
+        return handle_api_response(res)
     except Exception as e:
         return json.dumps({"error": "network_error", "message": str(e)})
 
@@ -181,8 +194,7 @@ def get_clients(search: str = None, **kwargs) -> str:
         if search:
             params["search"] = search
         res = requests.get(f"{EXPRESS_API_URL}/clients", headers=get_auth_headers(), params=params, timeout=5)
-        res.encoding = 'utf-8'
-        return res.text
+        return handle_api_response(res)
     except Exception as e:
         return json.dumps({"error": "network_error", "message": str(e)})
 
@@ -190,26 +202,21 @@ def create_client(name: str, is_evil: bool = False, description: str = "") -> st
     try:
         payload = {"name": name, "is_evil": is_evil, "description": description}
         res = requests.post(f"{EXPRESS_API_URL}/clients", json=payload, headers=get_auth_headers(), timeout=5)
-        res.encoding = 'utf-8'
-        return res.text
+        return handle_api_response(res)
     except Exception as e:
         return json.dumps({"error": "network_error", "message": str(e)})
 
 def delete_client(client_id: int) -> str:
     try:
         res = requests.delete(f"{EXPRESS_API_URL}/clients/{int(client_id)}", headers=get_auth_headers(), timeout=5)
-        res.encoding = 'utf-8'
-        if res.status_code == 204:
-            return json.dumps({"status": "success", "message": "Client moved to trash."})
-        return res.text or json.dumps({"error": f"API error {res.status_code}"})
+        return handle_api_response(res, "Client moved to trash.")
     except Exception as e:
         return json.dumps({"error": "network_error", "message": str(e)})
 
 def restore_client(client_id: int) -> str:
     try:
         res = requests.patch(f"{EXPRESS_API_URL}/clients/{int(client_id)}/restore", headers=get_auth_headers(), timeout=5)
-        res.encoding = 'utf-8'
-        return res.text
+        return handle_api_response(res)
     except Exception as e:
         return json.dumps({"error": "network_error", "message": str(e)})
 
@@ -222,8 +229,7 @@ def create_delivery(cargo_name: str, reward_cash: float, planet_id: int, client_
             "client_id": int(client_id)
         }
         res = requests.post(f"{EXPRESS_API_URL}/deliveries", json=payload, headers=get_auth_headers(), timeout=5)
-        res.encoding = 'utf-8'
-        return res.text
+        return handle_api_response(res)
     except Exception as e:
         return json.dumps({"error": "network_error", "message": str(e)})
 
@@ -235,16 +241,14 @@ def assign_crew_member(delivery_id: int, crew_member_id: int, role_on_ship: str)
             "role_on_ship": role_on_ship
         }
         res = requests.post(f"{EXPRESS_API_URL}/assignments", json=payload, headers=get_auth_headers(), timeout=5)
-        res.encoding = 'utf-8'
-        return res.text
+        return handle_api_response(res)
     except Exception as e:
         return json.dumps({"error": "network_error", "message": str(e)})
 
 def get_delivery_details(delivery_id: int) -> str:
     try:
         res = requests.get(f"{EXPRESS_API_URL}/deliveries/{delivery_id}", headers=get_auth_headers(), timeout=5)
-        res.encoding = 'utf-8'
-        return res.text
+        return handle_api_response(res)
     except Exception as e:
         return json.dumps({"error": "network_error", "message": str(e)})
 
@@ -252,26 +256,21 @@ def update_delivery_status(delivery_id: int, status: str) -> str:
     try:
         payload = {"status": status}
         res = requests.patch(f"{EXPRESS_API_URL}/deliveries/{int(delivery_id)}", json=payload, headers=get_auth_headers(), timeout=5)
-        res.encoding = 'utf-8'
-        return res.text
+        return handle_api_response(res)
     except Exception as e:
         return json.dumps({"error": "network_error", "message": str(e)})
 
 def fire_crew_member(crew_member_id: int, reason: str = "") -> str:
     try:
         res = requests.delete(f"{EXPRESS_API_URL}/crew/{int(crew_member_id)}", json={"reason": reason}, headers=get_auth_headers(), timeout=5)
-        res.encoding = 'utf-8'
-        if res.status_code == 204:
-            return json.dumps({"status": "success", "message": "Crew member fired successfully."})
-        return res.text or json.dumps({"error": f"API error {res.status_code}"})
+        return handle_api_response(res, "Crew member fired successfully.")
     except Exception as e:
         return json.dumps({"error": "network_error", "message": str(e)})
 
 def restore_crew_member(crew_member_id: int) -> str:
     try:
         res = requests.patch(f"{EXPRESS_API_URL}/crew/{int(crew_member_id)}/restore", headers=get_auth_headers(), timeout=5)
-        res.encoding = 'utf-8'
-        return res.text
+        return handle_api_response(res)
     except Exception as e:
         return json.dumps({"error": "network_error", "message": str(e)})
 

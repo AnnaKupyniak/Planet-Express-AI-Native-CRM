@@ -57,15 +57,6 @@ CREATE TABLE "Assignment" (
     CONSTRAINT "Assignment_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
-CREATE TABLE "FlightLog" (
-    "id" SERIAL NOT NULL,
-    "note" TEXT NOT NULL,
-    "timestamp" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "delivery_id" INTEGER NOT NULL,
-
-    CONSTRAINT "FlightLog_pkey" PRIMARY KEY ("id")
-);
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
@@ -85,5 +76,3 @@ ALTER TABLE "Assignment" ADD CONSTRAINT "Assignment_delivery_id_fkey" FOREIGN KE
 -- AddForeignKey
 ALTER TABLE "Assignment" ADD CONSTRAINT "Assignment_crew_member_id_fkey" FOREIGN KEY ("crew_member_id") REFERENCES "CrewMember"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
--- AddForeignKey
-ALTER TABLE "FlightLog" ADD CONSTRAINT "FlightLog_delivery_id_fkey" FOREIGN KEY ("delivery_id") REFERENCES "Delivery"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

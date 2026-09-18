@@ -65,9 +65,9 @@ model Assignment {
   id             Int        @id @default(autoincrement())
   role_on_ship   String
   delivery_id    Int
-  delivery       Delivery   @relation(fields: [delivery_id], references: [id])
+  delivery       Delivery   @relation(fields: [delivery_id], references: [id], onDelete: Cascade)
   crew_member_id Int
-  crew_member    CrewMember @relation(fields: [crew_member_id], references: [id])
+  crew_member    CrewMember @relation(fields: [crew_member_id], references: [id], onDelete: Cascade)
 
   @@unique([delivery_id, crew_member_id])
 }

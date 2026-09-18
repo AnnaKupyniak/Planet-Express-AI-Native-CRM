@@ -1,6 +1,7 @@
 import { Router, Response } from 'express';
 import { AuthenticatedRequest } from '../middleware/auth';
 import { prisma } from '../app';
+import { CrewMemberSchema } from '../validation';
 
 const router = Router();
 
@@ -23,11 +24,12 @@ router.get('/:id', async (req: AuthenticatedRequest, res: Response): Promise<voi
 });
 
 router.post('/', async (req: AuthenticatedRequest, res: Response): Promise<void> => {
-  const { name, role } = req.body;
-  if (!name || !role) {
-    res.status(400).json({ error: 'validation_error', message: 'Name and role are required' });
+  const validation = CrewMemberSchema.safeParse(req.body);
+  if (!validation.success) {
+    res.status(400).json({ error: 'validation_error', message: 'Invalid request data', detail: validation.error.issues });
     return;
   }
+  const { name, role } = validation.data;
   const existingMember = await prisma.crewMember.findFirst({ where: { name } });
   if (existingMember) {
     res.status(200).json(existingMember);

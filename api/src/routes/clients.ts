@@ -41,7 +41,7 @@ router.post('/', async (req: AuthenticatedRequest, res: Response): Promise<void>
     res.status(400).json({ error: 'validation_error', message: 'Invalid request data', detail: validation.error.issues });
     return;
   }
-  const { name, is_evil, description } = req.body;
+  const { name, is_evil, description } = validation.data;
   const existingClient = await prisma.client.findFirst({ where: { name } });
   if (existingClient) {
     res.status(200).json(existingClient);
